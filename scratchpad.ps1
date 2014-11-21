@@ -1,30 +1,36 @@
-﻿$TeamCityUser = "admin"
+﻿$TeamCityUser = "devops"
 $TeamCityPass = "fmsource001"
 $TeamCityServer = "source.doubledutch.me"
-$ProjectID = ""
+$ProjectID = "Deployments"
 $BuildTypeID = "Deployments_HCacheDeploy"
+$TeamCityPort = [int32]443
 
-$buildXML = [xml]{
+[xml]$buildXML = {
 <build>
-</build>}
-$buildXML.build.AppendChild()
+<buildType id="BuildTypeID"/>
+</build>
+} -replace "BuildTypeID",$BuildTypeID
 
-$buildID = 
-
-
-    <buildType id =$BuildTypeID/>
+$uri = ("https://"+$TeamCityServer+":"+$TeamCityPort -join '')
+$uri = ("https://"+$TeamCityServer+":"+$TeamCityPort+"/app/rest/projects" -join '')
+$uri = ("https://"+$TeamCityServer+":"+$TeamCityPort+"/app/rest/projects/id:"+$ProjectID -join '')
 
 $projectURI = ($uri,"/projects/id:",$ProjectID -join '')
 $buildURL = ($projectURI)
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $TeamCityUser,$TeamCityPass)))
 
-(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"server" -join '')).server
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).projects.project.Deployments
+$builduri2 = ((Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).project.buildTypes.buildType|Where-Object {$_.id -eq "$BuildTypeID"}|select -expa href)
 
-(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"builds" -join '')).builds.build
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).projects.project.Deployments
+
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,$builduri2 -join '')).buildtype
 
 ###Check to see if project and build exists
-$exists = ((Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"projects/id:Deployments" -join '')).project.buildTypes.buildtype | where {$_.id -eq "Deployments_HCacheDeploy"})
-$exists
+
+$exists = $null
+$exists = ((Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"/projects/id:$ProjectID" -join '')).project.buildTypes.buildtype | where {$_.id -eq $BuildTypeID})
+if($exists){return $true}else{return $false}
 if($exists){return "yes"}
 
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"agents" -join '')).agents.agent
