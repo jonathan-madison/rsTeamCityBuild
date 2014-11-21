@@ -13,7 +13,16 @@ http://teamcity:8111/httpAuth/app/rest/projects
 
 $user = "devops"
 $pass = "fmsource001"
-$uri = "http://source.doubledutch.me/app/rest/projects"
+$uri = "http://source.doubledutch.me/app/rest/"
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $user,$pass)))
 
-$proj = Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"server" -join '')).server
+
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"builds" -join '')).builds.build
+
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"projects/id:Deployments" -join '')).project
+
+
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"agents" -join '')).agents.agent
+
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"buildQueue" -join '')).builds
