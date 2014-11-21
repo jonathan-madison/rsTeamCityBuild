@@ -1,28 +1,48 @@
-﻿$user = "admin"
-$pass = "fmsource001"
-$statusAPI = ""
+﻿$TeamCityUser = "admin"
+$TeamCityPass = "fmsource001"
+$TeamCityServer = "source.doubledutch.me"
+$ProjectID = ""
+$BuildTypeID = "Deployments_HCacheDeploy"
 
-$webclient = New-Object System.Net.WebClient
-$webclient.Credentials = New-Object System.Net.NetworkCredential($user,$pass)
-$webclient.ResponseHeaders
+$buildXML = [xml]{
+<build>
+</build>}
+$buildXML.build.AppendChild()
 
-Invoke-RestMethod -uri http://source.doubledutch.me/app/rest/projects -Method Get -Headers @{}
-
-http://teamcity:8111/httpAuth/app/rest/projects
+$buildID = 
 
 
-$user = "devops"
-$pass = "fmsource001"
-$uri = "http://source.doubledutch.me/app/rest/"
-$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $user,$pass)))
+    <buildType id =$BuildTypeID/>
+
+$projectURI = ($uri,"/projects/id:",$ProjectID -join '')
+$buildURL = ($projectURI)
+$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $TeamCityUser,$TeamCityPass)))
 
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"server" -join '')).server
 
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"builds" -join '')).builds.build
 
-(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"projects/id:Deployments" -join '')).project
-
+###Check to see if project and build exists
+$exists = ((Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"projects/id:Deployments" -join '')).project.buildTypes.buildtype | where {$_.id -eq "Deployments_HCacheDeploy"})
+$exists
+if($exists){return "yes"}
 
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"agents" -join '')).agents.agent
 
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,"buildQueue" -join '')).builds
+
+Function Test-rsBuildExists
+{
+param(
+[System.String]
+$TeamCityServer,
+
+[System.String]
+$ProjectID,
+
+
+[System.String]
+$a
+
+)
+}
