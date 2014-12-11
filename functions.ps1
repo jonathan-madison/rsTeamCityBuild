@@ -1,6 +1,6 @@
 ﻿
 ### Checks for presence of files in $CheckFile array
-Function Invoke-rsCheckFiles{
+Function Get-rsCheckFiles{
 param (
 [string[](mandatory=$true)]
 $CheckFile
@@ -17,6 +17,8 @@ $CheckFile
     }
 
 }
+
+
 
 
 
@@ -38,8 +40,15 @@ $TeamCityPass,
 [string(mandatory=$true)]
 $BuildTypeID
 )
+#convert credentials to Base64 for auth header
+$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $TeamCityUser,$TeamCityPass)))
 
-$buildStatusURI = 
+#define base API request including auth
+$baseURI = ("https://"+$TeamCityServer+":"+$TeamCityPort+"/app/rest/server" -join '')
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $baseURI).server|select -ExpandProperty versionMajor
+
+$app = ($baseRequest+"/app/rest/server" -join '')
 
 
 }
+

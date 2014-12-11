@@ -23,7 +23,7 @@
 
 #Additional Functions
 
-#1 Invoke-rsCheckFiles
+#1 Get-rsCheckFiles
 #2 Get-rsBuildInProgress
 #3 Start-rsTeamCityBuild
 #4 Get-rsTeamCityAPIVersion (forward compatibility)

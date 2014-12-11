@@ -11,8 +11,7 @@ $TeamCityPort = [int32]443
 </build>
 } -replace "BuildTypeID",$BuildTypeID
 
-$uri = ("https://"+$TeamCityServer+":"+$TeamCityPort -join '')
-$uri = ("https://"+$TeamCityServer+":"+$TeamCityPort+"/app/rest/projects" -join '')
+$uri = ("https://"+$TeamCityServer+":"+$TeamCityPort+"/app/rest" -join '')
 $uri = ("https://"+$TeamCityServer+":"+$TeamCityPort+"/app/rest/projects/id:"+$ProjectID -join '')
 
 $projectURI = ($uri,"/projects/id:",$ProjectID -join '')
@@ -22,7 +21,7 @@ $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).projects.project.Deployments
 $builduri2 = ((Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).project.buildTypes.buildType|Where-Object {$_.id -eq "$BuildTypeID"}|select -expa href)
 
-(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).projects.project.Deployments
+(Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri $uri).projects.project
 
 (Invoke-RestMethod -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -uri ($uri,$builduri2 -join '')).buildtype
 
